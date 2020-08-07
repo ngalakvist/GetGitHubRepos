@@ -12,25 +12,30 @@ namespace GetGitHubRepos
     //Enter your Github Login Vairables
     private const string Username = "";
     private const string Password = "";
-    private const string Resource = "orgs/<your Org>/repos?page=1&per_page=200";
 
     static void Main(string[] args)
     {
-      var client = new RestClient("https://api.github.com");    
+      var client = new RestClient("https://api.github.com");
       client.Authenticator = new HttpBasicAuthenticator(Username, Password);
-     
-      var request = new RestRequest(Resource, DataFormat.Json);
-      var response = client.Get(request);
-      var jsonListRepos =  response.Content;
-      var jsonArray = JToken.Parse(jsonListRepos);
-      IList<string> repo = new List<string>();
-      foreach (var record in jsonArray)
+      IList<string> repos = new List<string>();
+      for (int i = 1; i < 4; i++)
       {
-        var name = record["name"];
-        repo.Add(name.ToString());
-      }   
-      repo.ToList().ForEach(m => Console.WriteLine(m));
-      Console.WriteLine("Number of Repos :"+ repo.Count);
+        var request = new RestRequest("orgs/mdh-se/repos?page=" + i + "&per_page=200", DataFormat.Json);
+        var response = client.Get(request);
+        var jsonListRepos = response.Content;
+        var jsonArray = JToken.Parse(jsonListRepos);
+       
+        foreach (var record in jsonArray)
+        {
+          var name = record["name"];
+          repos.Add(name.ToString());
+        }
+        Console.WriteLine("Number of Repos :" + repos.Count);
+      }
+      // Kolla i bin folder för att hitta filen
+      System.IO.File.WriteAllLines("savedGitRepos.txt", repos);
+      repos.ToList().ForEach(m => Console.WriteLine(m));
+      Console.WriteLine("Number of Repos :" + repos.Count);
       Console.ReadLine();
     }
   }
